@@ -42,7 +42,7 @@ class Exercise4 {
         public <U> LazyCollectionHelper<T, U> map(Function<R, U> mapping) {
             Function<T, List<U>> func = (T t) -> {
                 List<U> newList = new ArrayList<>();
-                function.apply(t).forEach(r -> newList.add(mapping.apply(r)));
+                function.apply(t).forEach(e -> newList.add(mapping.apply(e)));
                 return newList;
             };
             return new LazyCollectionHelper<>(source, func);
