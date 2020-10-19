@@ -15,7 +15,7 @@ import java.util.function.Function;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @SuppressWarnings({"unused", "ConstantConditions"})
-class Exercise4 {
+class Exercise4Vol2 {
 
     private static class LazyCollectionHelper<T, R> {
         final private List<T> source;
@@ -31,27 +31,23 @@ class Exercise4 {
         }
 
         public <U> LazyCollectionHelper<T, U> flatMap(Function<R, List<U>> flatMapping) {
-            Function<T, List<U>> func = (T t) -> {
-                List<U> newList = new ArrayList<>();
-                function.apply(t).forEach(e -> newList.addAll(flatMapping.apply(e)));
-                return newList;
-            };
-            return new LazyCollectionHelper<>(source, func);
+            return new LazyCollectionHelper<>(source, reduce(flatMapping).compose(function));
         }
 
         public <U> LazyCollectionHelper<T, U> map(Function<R, U> mapping) {
-            Function<T, List<U>> func = (T t) -> {
-                List<U> newList = new ArrayList<>();
-                function.apply(t).forEach(e -> newList.add(mapping.apply(e)));
-                return newList;
-            };
-            return new LazyCollectionHelper<>(source, func);
+            return new LazyCollectionHelper<>(source, reduce(mapping.andThen(Collections::singletonList)).compose(function));
         }
 
         public List<R> force() {
-            List<R> newList = new ArrayList<>();
-            source.forEach(e -> newList.addAll(function.apply(e)));
-            return newList;
+            return reduce(function).apply(source);
+        }
+
+        private <U, V> Function<List<U>, List<V>> reduce(Function<U, List<V>> function) {
+            return list -> {
+                List<V> result = new ArrayList<>();
+                list.forEach(function.andThen(result::addAll)::apply);
+                return result;
+            };
         }
     }
 
@@ -75,7 +71,7 @@ class Exercise4 {
         assertThat(codes, Matchers.contains(calcCodes("dev", "dev", "tester", "dev", "dev", "QA", "QA", "dev", "tester", "tester", "QA", "QA", "QA", "dev").toArray()));
     }
 
-    private static List<Integer> calcCodes(String...strings) {
+    private static List<Integer> calcCodes(String... strings) {
         List<Integer> codes = new ArrayList<>();
         for (String string : strings) {
             for (char letter : string.toCharArray()) {
@@ -127,5 +123,5 @@ class Exercise4 {
                         ))
         );
     }
-
 }
+
